@@ -1,0 +1,398 @@
+:root {
+  --primary-color: #0052d9;
+  --secondary-color: #0066ff;
+  --accent-color: #00b8d9;
+  --text-color: #333;
+  --light-text: #666;
+  --background-color: #f5f7fa;
+  --card-background: #fff;
+  --border-color: #e0e6ed;
+  --success-color: #00c875;
+  --error-color: #ff5252;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Header Styles */
+header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.logo i {
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  margin-right: 1rem;
+}
+
+h1 {
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  color: var(--light-text);
+}
+
+/* Card Styles */
+.info-card {
+  background-color: var(--card-background);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+.json-data {
+  background-color: var(--card-background);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 2rem 2rem 1.5rem 2rem;
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.card-header i {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  margin-right: 1rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--primary-color);
+}
+
+/* Loading Animation */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(0, 82, 217, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Geo Data Display */
+.geo-data {
+  padding: 0.5rem;
+}
+
+.geo-card {
+  background-color: var(--card-background);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.geo-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.geo-card-section {
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.geo-card-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border-color), transparent);
+  margin: 0 1.5rem;
+}
+
+/* Location Section */
+.location-section {
+  background: linear-gradient(135deg, rgba(0, 82, 217, 0.03) 0%, rgba(0, 184, 217, 0.03) 100%);
+}
+
+.location-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1.5rem;
+  box-shadow: 0 4px 8px rgba(0, 82, 217, 0.2);
+}
+
+.location-icon i {
+  font-size: 1.5rem;
+  color: white;
+}
+
+.location-info {
+  flex: 1;
+}
+
+.location-primary {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.location-separator {
+  color: var(--light-text);
+  margin: 0 0.5rem;
+  font-weight: 300;
+}
+
+.location-secondary {
+  display: flex;
+  gap: 1rem;
+}
+
+.code {
+  font-size: 0.85rem;
+  color: var(--light-text);
+  font-family: monospace;
+  background-color: rgba(0, 0, 0, 0.03);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* Details Section */
+.details-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: space-between;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 200px;
+}
+
+.detail-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background-color: rgba(0, 82, 217, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+}
+
+.detail-icon i {
+  font-size: 1rem;
+  color: var(--primary-color);
+}
+
+.detail-info {
+  flex: 1;
+}
+
+.detail-label {
+  font-size: 0.9rem;
+  color: var(--light-text);
+  margin-bottom: 0.25rem;
+}
+
+.detail-value {
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+
+
+/* JSON Display */
+.json-data {
+  position: relative;
+}
+
+/* 移除了旧的 .json-data .card-header 样式，因为我们现在使用内联样式 */
+
+.code-badge {
+  margin-left: auto;
+  background-color: var(--accent-color);
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 184, 217, 0.2);
+}
+
+#json-display {
+  background-color: #2d2d2d;
+  padding: 1.5rem;
+  border-radius: 4px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  color: #e6e6e6;
+  border: none;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.1);
+  line-height: 1.5;
+  margin: 0;
+}
+
+#json-display::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+  border-radius: 4px 4px 0 0;
+  opacity: 0.7;
+}
+
+/* Error Message */
+.error-message {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background-color: rgba(255, 82, 82, 0.1);
+  border-radius: 8px;
+  color: var(--error-color);
+}
+
+.error-message i {
+  font-size: 1.5rem;
+  margin-right: 1rem;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding-top: 2rem;
+  color: var(--light-text);
+}
+
+footer a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
+.small {
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  .logo i {
+    font-size: 1.8rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+  }
+
+  .info-card, .json-data {
+    padding: 1.5rem 1rem;
+  }
+
+  .location-icon {
+    width: 40px;
+    height: 40px;
+    margin-right: 1rem;
+  }
+
+  .location-icon i {
+    font-size: 1.2rem;
+  }
+
+  .location-primary {
+    font-size: 1.2rem;
+  }
+
+  .details-section {
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+
+  .detail-item {
+    width: 100%;
+  }
+
+  .code-badge {
+    margin-left: 0;
+    margin-top: 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  #json-display {
+    font-size: 0.8rem;
+    padding: 1rem;
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "pages-functions-demo",
+  "description": "EdgeOne Pages Functions Demo",
+  "scripts": {
+    "build": "node scripts/build.js"
+  }
+}

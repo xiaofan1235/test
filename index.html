@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pages Functions Demo</title>
+  <style>
+    body { font-family: system-ui; max-width: 600px; margin: 50px auto; padding: 20px; }
+    button { margin: 5px; padding: 10px 20px; cursor: pointer; }
+    pre { background: #f5f5f5; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <h1>EdgeOne Pages Functions Demo</h1>
+  <button onclick="callApi()">Call Hello API</button>
+  <button onclick="callProbe()">Diagnostics</button>
+  <pre id="result"></pre>
+  <script>
+    async function callApi() {
+      const res = await fetch('/api/hello');
+      const data = await res.json();
+      document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+    }
+    async function callProbe() {
+      const res = await fetch('/api/probe');
+      const data = await res.json();
+      document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>
